@@ -3,3 +3,4 @@ djangorestframework==3.16.0
 pillow==11.2.1
 django-extensions==4.1
 django-polymorphic==4.1.0
+Faker==37.3.0
