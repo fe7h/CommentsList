@@ -95,12 +95,52 @@ def test():
 
 # <CTEQuerySet [{'id': 33}, {'id': 9}, {'id': 10}, {'id': 15}, {'id': 16}, {'id': 23}, {'id': 35}, {'id': 14}, {'id': 27}, {'id': 21}, {'id': 22}, {'id': 40}, {'id': 30}, {'id': 32}]>
 
+class Test(models.Manager):
 
-class NewManager(PolymorphicManager, CTEManager, ):
-    pass
+    make_cte = None
+
+    def __call__(self, pk):
+        self.make_cte = self._make_cte(pk)
+        return self
+
+    def get_queryset(self):
+        if not self.make_cte:
+            raise Exception
+        queryset = self.placeholder()
+        del self.make_cte
+        return queryset
+
+    def placeholder(self):
+        cte = With.recursive(self.make_cte)
+
+        queryset = cte.join(
+            NestedComment.cte_objects.all(), #<====================================
+            parent_comment_id=cte.col.nested_comments
+        ).with_cte(cte)
+
+        return queryset
+
+    def _make_cte(self, pk):
+        def inner(cte):
+            print(self.model)
+            return self.model.cte_objects.filter(pk=pk).values('nested_comments').union(#<====================================
+                cte.join(
+                    NestedComment,
+                    parent_comment_id=cte.col.nested_comments
+                ).values('nested_comments'),
+                all=True
+            )
+        return inner
 
 
-class BaseComment(PolymorphicModel):
+class CommentPlaceholderMixin:
+
+    objects = PolymorphicManager()
+    cte_objects = CTEManager()
+    cool = Test()
+
+
+class BaseComment(CommentPlaceholderMixin, PolymorphicModel):
     time_create = models.DateTimeField(auto_now_add=True)
     # user_data = models.ForeignKey(
     #         UserData,
@@ -112,11 +152,6 @@ class BaseComment(PolymorphicModel):
     email = models.EmailField()
     home_page = models.URLField(blank=True)
     text = models.TextField(max_length=5000)
-
-    objects = PolymorphicManager()
-    cte_objects = CTEManager()
-
-    # nested_comments = GenericRelation('NestedComment')
 
 
 class TopComment(BaseComment):
