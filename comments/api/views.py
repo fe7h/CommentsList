@@ -6,14 +6,16 @@ from rest_framework.response import Response
 
 from comments.models import BaseComment
 from .serializers import CommentPolymorphicSerializer
+from .pagination import DefaultCommentPagination
 
 
 class CommentView(mixins.RetrieveModelMixin,
                   mixins.ListModelMixin,
                   mixins.CreateModelMixin,
                   viewsets.GenericViewSet):
-    serializer_class = CommentPolymorphicSerializer
     queryset = BaseComment.objects.all()
+    serializer_class = CommentPolymorphicSerializer
+    pagination_class = DefaultCommentPagination
 
     @action(detail=True, methods=('GET',))
     def nested(self, request, pk=None):
