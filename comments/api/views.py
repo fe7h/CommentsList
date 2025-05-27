@@ -1,12 +1,23 @@
 from django.db.models import Q
 
-from rest_framework import viewsets, mixins
+from rest_framework import viewsets, mixins, filters
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
-from comments.models import BaseComment
-from .serializers import CommentPolymorphicSerializer
+from comments.models import BaseComment, TopComment
+from .serializers import CommentPolymorphicSerializer, TopCommentSerializers
 from .pagination import DefaultCommentPagination
+
+
+class TopCommentView(viewsets.GenericViewSet,
+                     mixins.ListModelMixin):
+    queryset = TopComment.objects.all()
+    serializer_class = TopCommentSerializers
+
+    pagination_class = DefaultCommentPagination
+
+    filter_backends = [filters.OrderingFilter]
+    ordering_fields = ['user_name', 'email', 'time_create']
 
 
 class CommentView(mixins.RetrieveModelMixin,
@@ -15,6 +26,7 @@ class CommentView(mixins.RetrieveModelMixin,
                   viewsets.GenericViewSet):
     queryset = BaseComment.objects.all()
     serializer_class = CommentPolymorphicSerializer
+
     pagination_class = DefaultCommentPagination
 
     @action(detail=True, methods=('GET',))

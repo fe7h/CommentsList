@@ -1,2 +1,2 @@
-from .comment import CommentPolymorphicSerializer
+from .comment import CommentPolymorphicSerializer, TopCommentSerializers, NestedCommentSerializers
 from .full_nested import CommentFullNestedSerializer
