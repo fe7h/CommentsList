@@ -1,21 +1,32 @@
 from django.db import models
+from django.core.validators import FileExtensionValidator
 
 from polymorphic.models import PolymorphicModel
 
 from .managers import CommentManagersMixin
+from .validators import validate_file_size
 
 
 # class UserData(models.Model):
 #     pass
 # модель с наборм данных с запроса пользователя(юзерагент апи и тд) и уникальным хешем на их основе
 
-# attached_media
-# class AttachedFile(models.Model):
-#     pass
-#
-#
-# class AttachedImage(models.Model):
-#     pass
+class AttachedMedia(PolymorphicModel):
+    pass
+
+
+class AttachedFile(AttachedMedia):
+    data = models.FileField(
+        upload_to='comments/files/',
+        validators=[
+            FileExtensionValidator(allowed_extensions=['txt']),
+            validate_file_size,
+        ],
+    )
+
+
+class AttachedImage(AttachedMedia):
+    pass
 
 
 class BaseComment(CommentManagersMixin, PolymorphicModel):
@@ -25,11 +36,18 @@ class BaseComment(CommentManagersMixin, PolymorphicModel):
     #         on_delete=models.PROTECT,
     #         related_name='comments',
     #     )
-
     user_name = models.CharField(max_length=30)
     email = models.EmailField()
-    home_page = models.URLField(blank=True)
+    home_page = models.URLField(blank=True, null=True)
     text = models.TextField(max_length=5000)
+
+    attached_media = models.OneToOneField(
+        AttachedMedia,
+        on_delete=models.SET_NULL,
+        related_name='comment',
+        blank=True,
+        null=True,
+    )
 
 
 class TopComment(BaseComment):
