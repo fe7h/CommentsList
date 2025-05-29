@@ -97,6 +97,9 @@ class BaseComment(CommentManagersMixin, PolymorphicModel):
         null=True,
     )
 
+    def __str__(self):
+        return f'{self.pk}: Create in {self.time_create} by {self.user_name}'
+
 
 class TopComment(BaseComment):
     pass
@@ -109,3 +112,6 @@ class NestedComment(BaseComment):
         related_name='nested_comments',
         blank=True
     )
+
+    def __str__(self):
+        return super().__str__() + f' answer to {self.parent_comment_id}'
