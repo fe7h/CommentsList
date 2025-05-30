@@ -24,7 +24,8 @@ class CommentView(mixins.RetrieveModelMixin,
                   mixins.ListModelMixin,
                   mixins.CreateModelMixin,
                   viewsets.GenericViewSet):
-    queryset = BaseComment.objects.all()
+    # queryset = BaseComment.objects.prefetch_related('attached_media').all()
+    queryset = BaseComment.with_media.all()
     serializer_class = CommentPolymorphicSerializer
 
     pagination_class = DefaultCommentPagination

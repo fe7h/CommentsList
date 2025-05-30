@@ -77,12 +77,18 @@ class CommentRecursiveSelectionManager(models.Manager):
         return inner
 
 
+class CommentWithMediaManager(PolymorphicManager):
+    def get_queryset(self):
+        return super().get_queryset().prefetch_related('attached_media')
+
+
 class CommentManagersMixin:
     def __init_subclass__(cls, **kwargs):
         managers = {
             'objects': PolymorphicManager,
             'cte_objects': CTEManager,
             'tree': CommentRecursiveSelectionManager,
+            'with_media': CommentWithMediaManager,
         }
 
         for name, manager_cls in managers.items():
