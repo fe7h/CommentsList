@@ -1,47 +1,38 @@
-<script setup>
-import HelloWorld from './components/HelloWorld.vue'
-import TheWelcome from './components/TheWelcome.vue'
-</script>
-
 <template>
-  <header>
-    <img alt="Vue logo" class="logo" src="./assets/logo.svg" width="125" height="125" />
-
-    <div class="wrapper">
-      <HelloWorld msg="You did it!" />
-    </div>
-  </header>
-
-  <main>
-    <TheWelcome />
-  </main>
+  <div>
+    <h2>Топ комментарии</h2>
+    <ul>
+      <li v-for="item in topData" :key="item.id">
+        <strong>{{ item.user_name }}</strong>: {{ item.text }}
+      </li>
+    </ul>
+  </div>
 </template>
 
+<script setup>
+import { ref, onMounted } from 'vue'
+
+const topData = ref([])
+
+const fetchTopData = async () => {
+  try {
+    const response = await fetch('http://localhost:8000/api/top/')
+    if (!response.ok) {
+      throw new Error(`Ошибка запроса: ${response.status}`)
+    }
+
+    const data = await response.json()
+    topData.value = data.results
+  } catch (error) {
+    console.error('Ошибка при загрузке данных:', error)
+  }
+}
+
+onMounted(() => {
+  fetchTopData()
+})
+</script>
+
 <style scoped>
-header {
-  line-height: 1.5;
-}
 
-.logo {
-  display: block;
-  margin: 0 auto 2rem;
-}
-
-@media (min-width: 1024px) {
-  header {
-    display: flex;
-    place-items: center;
-    padding-right: calc(var(--section-gap) / 2);
-  }
-
-  .logo {
-    margin: 0 2rem 0 0;
-  }
-
-  header .wrapper {
-    display: flex;
-    place-items: flex-start;
-    flex-wrap: wrap;
-  }
-}
 </style>
