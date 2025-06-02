@@ -1,5 +1,10 @@
-from rest_framework.pagination import PageNumberPagination
+from rest_framework.pagination import PageNumberPagination, CursorPagination
 
 
 class DefaultCommentPagination(PageNumberPagination):
     page_size = 25
+
+
+class CommentCursorPagination(CursorPagination):
+    page_size = 25
+    ordering = '-time_create'
