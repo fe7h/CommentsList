@@ -9,7 +9,7 @@ from .attached_media import AttachedFileSerializers, AttachedMediaPolymorphicSer
 COMMON_FIELDS = ('id', 'user_name', 'home_page', 'email', 'time_create', 'text', 'attached_media')
 READ_ONLY_FIELDS = ('time_create',)
 WRITE_ONLY_FIELDS = {
-    'email': {'write_only': True},
+    # 'email': {'write_only': True},
 }
 
 
