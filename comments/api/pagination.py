@@ -6,5 +6,5 @@ class DefaultCommentPagination(PageNumberPagination):
 
 
 class CommentCursorPagination(CursorPagination):
-    page_size = 25
+    page_size = 3
     ordering = '-time_create'
