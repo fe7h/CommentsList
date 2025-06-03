@@ -20,17 +20,17 @@ class BaseCommentSerializer(serializers.ModelSerializer):
     user_name = serializers.CharField(
         required=True, max_length=30
     )
-    attached_media = AttachedMediaPolymorphicSerializer(required=False)
-    #ПЕРЕОПРЕДЕЛИТЬ МЕТОД КРИЕЙТ ДЛЯ ТОГО ЧТО БЫ СОЗДАВТЬ СВЯЗАНЫЙ ОБЬЕКТ
+    attached_media = AttachedMediaPolymorphicSerializer(required=False, allow_null=True, default=None)
 
     def create(self, validated_data):
-        attached_media_data = validated_data.pop('attached_media')
-        attached_media_serializer = AttachedMediaPolymorphicSerializer(data=attached_media_data)
-        attached_media_serializer.is_valid(raise_exception=True)
-        attached_media_obj = attached_media_serializer.save()
+        if attached_media_data := validated_data.pop('attached_media'):
+            attached_media_serializer = AttachedMediaPolymorphicSerializer(data=attached_media_data)
+            attached_media_serializer.is_valid(raise_exception=True)
+            attached_media_obj = attached_media_serializer.save()
+            validated_data['attached_media'] = attached_media_obj
 
         comment_model = self.Meta.model
-        comment = comment_model.objects.create(attached_media=attached_media_obj, **validated_data)
+        comment = comment_model.objects.create(**validated_data)
 
         return comment
 

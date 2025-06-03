@@ -1,4 +1,6 @@
 from rest_framework import serializers
+from rest_framework.fields import empty
+
 from rest_polymorphic.serializers import PolymorphicSerializer
 
 from comments.models import AttachedMedia, AttachedFile, AttachedImage
@@ -12,6 +14,11 @@ class AutoMappingPolymorphicSerializer(PolymorphicSerializer):
 
     def to_resource_type(self, model_or_instance):
         return model_or_instance._meta.object_name.lower()
+
+    def run_validation(self, data=empty):
+        if self.allow_null and data is empty:
+            return None
+        return super().run_validation(data)
 
 
 class AttachedMediaSerializers(serializers.ModelSerializer):

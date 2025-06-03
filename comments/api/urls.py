@@ -4,8 +4,8 @@ from rest_framework import routers
 from . import views
 
 router = routers.SimpleRouter()
-router.register(r'test', views.CommentView, basename='test')
-router.register(r'top', views.TopCommentView, basename='top')
+router.register(r'comments/top', views.TopCommentView, basename='top')
+router.register(r'comments', views.CommentView, basename='comments')
 
 urlpatterns = [
     path('', include(router.urls))
