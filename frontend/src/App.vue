@@ -12,14 +12,14 @@
         {{ fieldLabels[field] }}
         <span v-if="currentOrdering.field === field">
       {{ currentOrdering.desc ? '↓' : '↑' }}
-    </span>
+        </span>
       </button>
     </div>
 
-    <Comment v-for="obj in topComments" :key="obj.id" :comment="obj"/>
+      <Comment v-for="obj in topComments" :key="obj.id" :comment="obj"/>
 
-    <button v-if="nextPageUrl" @click="fetchTopData">More</button>
-    <p v-show="!nextPageUrl">END</p>
+      <button v-if="nextPageUrl" @click="fetchTopData">More</button>
+      <p v-show="!nextPageUrl">END</p>
 
   </div>
 </template>
