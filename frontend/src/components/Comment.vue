@@ -33,15 +33,20 @@
 </template>
 
 <script setup>
+import {defineAsyncComponent, ref} from 'vue'
 
 const props = defineProps({
   comment: Object
 })
 
-import {defineAsyncComponent, ref} from 'vue'
 const Comment = defineAsyncComponent(() => import('./Comment.vue'))
 const showReplys = ref(false)
 const isLoading = ref(false)
+const nestedComments = ref([])
+import { useStore } from 'vuex'
+
+let nextPageUrl = ''
+const store = useStore()
 
 const formatDate = (isoStr) => {
   return new Date(isoStr).toLocaleString('en', {
@@ -50,11 +55,7 @@ const formatDate = (isoStr) => {
   })
 }
 
-const nestedComments = ref([])
-let nextPageUrl = ''
-
 const fetchData = async () => {
-  console.log('Кнопка нажата')
   try {
     let response
 
@@ -71,6 +72,11 @@ const fetchData = async () => {
     const data = await response.json()
     nestedComments.value.push(...data.results)
     nextPageUrl = data.next
+
+    if (nextPageUrl === null) {
+        store.commit('ADD_BRANCHES', {id: props.comment.id, nestedComments })
+    }
+
   } catch (error) {
     console.error('Ошибка при загрузке данных:', error)
   }
