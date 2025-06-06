@@ -43,6 +43,9 @@
       <img v-if="previewImage" :src="previewImage" class="img-fluid mt-2 rounded border" style="max-width: 320px; max-height: 240px;" />
     </div>
 
+    <!-- Answer -->
+    <input v-model="form.answer" type="hidden" />
+
     <!-- Submit -->
     <button type="submit" class="btn btn-primary">Send</button>
   </form>
@@ -52,37 +55,40 @@
 import { ref } from 'vue'
 import { useVuelidate } from '@vuelidate/core'
 import { required, email, helpers, url, minLength, maxLength } from '@vuelidate/validators'
+import axios from 'axios'
 
 const allowedTags = ['a', 'code', 'i', 'strong']
 
-function isValidXHTML(value) {
-  const parser = new DOMParser()
-  const wrapped = `<body>${value}</body>`
-  const doc = parser.parseFromString(wrapped, 'application/xhtml+xml')
-  const parserError = doc.querySelector('parsererror')
-  if (parserError) return false
-
-  const nodes = doc.body.querySelectorAll('*')
-  for (const node of nodes) {
-    const tag = node.tagName.toLowerCase()
-    if (!allowedTags.includes(tag)) return false
-    if (tag === 'a' && (!node.hasAttribute('href') || !node.hasAttribute('title'))) {
-      return false
-    }
-  }
-  return true
-}
-
-const htmlValidation = helpers.withMessage(
-  'Text must be valid XHTML and use only allowed tags',
-  value => isValidXHTML(value)
-)
+// function isValidXHTML(value) {
+//   const parser = new DOMParser()
+//   const wrapped = `<body>${value}</body>`
+//   const doc = parser.parseFromString(wrapped, 'application/xhtml+xml')
+//   const parserError = doc.querySelector('parsererror')
+//   if (parserError) return false
+//
+//   const nodes = doc.body.querySelectorAll('*')
+//   for (const node of nodes) {
+//     const tag = node.tagName.toLowerCase()
+//     if (!allowedTags.includes(tag)) return false
+//     if (tag === 'a' && (!node.hasAttribute('href') || !node.hasAttribute('title'))) {
+//       return false
+//     }
+//   }
+//   return true
+// }
+//
+// const htmlValidation = helpers.withMessage(
+//   'Text must be valid XHTML and use only allowed tags',
+//   value => isValidXHTML(value)
+// )
 
 const form = ref({
   username: '',
   email: '',
   homepage: '',
   text: '',
+  file: null,
+  answer: null,
 })
 
 const rules = {
@@ -90,12 +96,13 @@ const rules = {
     username: { required, minLength: minLength(1), maxLength: maxLength(30)},
     email: { required, email },
     homepage: { url: helpers.withMessage('Invalid URL', url), $autoDirty: true },
-    text: { required, htmlValidation },
+    text: { required, maxLength: maxLength(5000) },
+    file: {},
+    answer: {},
   },
 }
 
 const v$ = useVuelidate(rules, { form })
-console.log("v$ object: ", v$)
 const fileError = ref('')
 const previewImage = ref(null)
 const textarea = ref(null)
@@ -121,6 +128,8 @@ function handleFileUpload(event) {
   fileError.value = ''
   previewImage.value = null
   if (!file) return
+
+  form.value.file = file
 
   const isImage = ['image/jpeg', 'image/png', 'image/gif'].includes(file.type)
   const isText = file.type === 'text/plain'
@@ -160,10 +169,63 @@ function handleFileUpload(event) {
   }
 }
 
-function submitForm() {
+function commentData(formData) {
+  let resourcetype = 'topcomment'
+  formData.append('user_name', form.value.username)
+  formData.append('email', form.value.email)
+  formData.append('home_page', form.value.homepage)
+  formData.append('text', form.value.text)
+  if (form.value.answer){
+    formData.append('parent_comment_id', form.value.answer)
+    resourcetype = 'nestedcomment'
+    console.log(form.value.answer)
+  }
+  formData.append('resourcetype', resourcetype)
+}
+
+function mediaData(formData) {
+  const PREFIX = 'attached_media.'
+  let resourcetype = ''
+
+  formData.append(PREFIX + 'data', form.value.file)
+
+  const isImage = ['image/jpeg', 'image/png', 'image/gif'].includes(form.value.file.type)
+  const isText = form.value.file.type === 'text/plain'
+  if (isImage) {
+    resourcetype = 'attachedimage'
+  } else if(isText) {
+    resourcetype = 'attachedfile'
+  }
+
+  formData.append(PREFIX + 'resourcetype', resourcetype)
+}
+
+async function submitForm() {
   v$.value.$touch()
   if (!v$.value.$invalid && !fileError.value) {
-    alert('Form is valid and ready for submission!')
+    try {
+      const formData = new FormData()
+
+      commentData(formData)
+
+      if (form.value.file) {
+        mediaData(formData)
+      }
+
+      console.log(formData)
+
+      const response = await axios.post('http://localhost:8000/api/comments/', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
+      })
+
+      console.log('Form submitted successfully:', response.data)
+      alert('Form submitted successfully!')
+    } catch (error) {
+      console.error('Error submitting form:', error)
+      alert('There was an error submitting the form.')
+    }
   } else {
     alert('Please fix the errors.')
   }
