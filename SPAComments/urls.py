@@ -4,10 +4,12 @@ from django.conf.urls.static import static
 from django.conf import settings
 
 from comments.api.urls import urlpatterns as comment_urls
+from comments.urls import urlpatterns as csrf_urls
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/', include(comment_urls)),
+    path('api/', include(csrf_urls)),
 ]
 
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

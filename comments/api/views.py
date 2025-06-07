@@ -1,4 +1,6 @@
 from django.db.models import Q
+from django.utils.decorators import method_decorator
+from django.views.decorators.csrf import csrf_protect
 
 from rest_framework import viewsets, mixins, filters
 from rest_framework.decorators import action
@@ -20,6 +22,7 @@ class TopCommentView(viewsets.GenericViewSet,
     ordering_fields = ['user_name', 'email', 'time_create']
 
 
+@method_decorator(csrf_protect, name='create')
 class CommentView(mixins.RetrieveModelMixin,
                   mixins.ListModelMixin,
                   mixins.CreateModelMixin,

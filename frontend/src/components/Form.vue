@@ -52,12 +52,21 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { onMounted, ref } from 'vue'
 import { useVuelidate } from '@vuelidate/core'
 import { required, email, helpers, url, minLength, maxLength } from '@vuelidate/validators'
 import axios from 'axios'
 
 const allowedTags = ['a', 'code', 'i', 'strong']
+
+onMounted(async () => {
+  try {
+    axios.defaults.withCredentials = true;
+    await axios.get('http://localhost:8000/api/csrf/');
+  } catch (error) {
+    console.error('Ошибка при запросе CSRF токена:', error);
+  }
+});
 
 // function isValidXHTML(value) {
 //   const parser = new DOMParser()
@@ -200,6 +209,12 @@ function mediaData(formData) {
   formData.append(PREFIX + 'resourcetype', resourcetype)
 }
 
+function getCSRFToken() {
+    let name = 'csrftoken';
+    let value = document.cookie.match('(^|;)\\s*' + name + '\\s*=\\s*([^;]+)');
+    return value ? value.pop() : '';
+}
+
 async function submitForm() {
   v$.value.$touch()
   if (!v$.value.$invalid && !fileError.value) {
@@ -216,7 +231,8 @@ async function submitForm() {
 
       const response = await axios.post('http://localhost:8000/api/comments/', formData, {
         headers: {
-          'Content-Type': 'multipart/form-data'
+          'Content-Type': 'multipart/form-data',
+          'X-CSRFToken': getCSRFToken(),
         }
       })
 
