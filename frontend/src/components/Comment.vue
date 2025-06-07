@@ -5,7 +5,7 @@
             <span class="text-muted small">• {{ formatDate(comment.time_create) }}</span>
             <button class="btn btn-link btn-sm p-0 mb-1">Ответить</button>
           </div>
-          <p>{{ comment.text }}</p>
+          <p v-html="sanitizedText"></p>
 
           <button
               class="btn btn-sm btn-outline-primary mt-2 toggle-replies-btn"
@@ -33,7 +33,7 @@
 </template>
 
 <script setup>
-import {defineAsyncComponent, ref} from 'vue'
+import {defineAsyncComponent, computed, ref} from 'vue'
 
 const props = defineProps({
   comment: Object
@@ -44,9 +44,23 @@ const showReplys = ref(false)
 const isLoading = ref(false)
 const nestedComments = ref([])
 import { useStore } from 'vuex'
+import xss from 'xss'
 
 let nextPageUrl = ''
 const store = useStore()
+
+const sanitizedText = computed(() => {
+  const xssOptions = {
+    whiteList: {
+      a: ['href', 'title'],
+      code: [],
+      i: [],
+      strong: [],
+    },
+  }
+
+  return xss(props.comment.text, xssOptions)
+})
 
 const formatDate = (isoStr) => {
   return new Date(isoStr).toLocaleString('en', {
