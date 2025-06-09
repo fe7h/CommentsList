@@ -1,12 +1,13 @@
 from rest_framework import serializers
 from rest_polymorphic.serializers import PolymorphicSerializer
+from drf_recaptcha.fields import ReCaptchaV2Field
 
 from comments.models import TopComment, NestedComment, BaseComment
 
 from .attached_media import AttachedFileSerializers, AttachedMediaPolymorphicSerializer
 
 
-COMMON_FIELDS = ('id', 'user_name', 'home_page', 'email', 'time_create', 'text', 'attached_media')
+COMMON_FIELDS = ('id', 'user_name', 'home_page', 'email', 'time_create', 'text', 'attached_media',)
 READ_ONLY_FIELDS = ('time_create',)
 WRITE_ONLY_FIELDS = {
     # 'email': {'write_only': True},
@@ -36,6 +37,8 @@ class BaseCommentSerializer(serializers.ModelSerializer):
 
 
 class RawRepresentationPolymorphicSerializer(PolymorphicSerializer):
+    recaptcha = ReCaptchaV2Field()
+
     def to_representation(self, instance):
         ret = super().to_representation(instance)
         ret.pop(self.resource_type_field_name)
@@ -43,3 +46,12 @@ class RawRepresentationPolymorphicSerializer(PolymorphicSerializer):
 
     def to_resource_type(self, model_or_instance):
         return model_or_instance._meta.object_name.lower()
+
+    def is_valid(self, *args, **kwargs):
+        result = super().is_valid(*args, **kwargs)
+
+        recaptcha_field = self.fields.get('recaptcha')
+        recaptcha_value = self.initial_data.get('recaptcha')
+        recaptcha_field.run_validation(recaptcha_value)
+
+        return result

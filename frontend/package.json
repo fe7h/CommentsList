@@ -9,11 +9,14 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@unhead/vue": "^2.0.10",
     "@vuelidate/core": "^2.0.3",
     "@vuelidate/validators": "^2.0.4",
     "axios": "^1.9.0",
     "bootstrap": "^5.3.6",
     "vue": "^3.5.13",
+    "vue-recaptcha": "^3.0.0-alpha.2",
+    "vue3-recaptcha-v2": "^2.1.0",
     "vuex": "^4.1.0",
     "xss": "^1.0.15"
   },

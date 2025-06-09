@@ -43,6 +43,11 @@
       <img v-if="previewImage" :src="previewImage" class="img-fluid mt-2 rounded border" style="max-width: 320px; max-height: 240px;" />
     </div>
 
+    <!-- reCAPTCHA -->
+    <RecaptchaV2
+      @widget-id="handleWidgetId"
+    />
+
     <!-- Answer -->
     <input v-model="form.answer" type="hidden" />
 
@@ -56,8 +61,17 @@ import { onMounted, ref } from 'vue'
 import { useVuelidate } from '@vuelidate/core'
 import { required, email, helpers, url, minLength, maxLength } from '@vuelidate/validators'
 import axios from 'axios'
+import { RecaptchaV2, useRecaptcha } from "vue3-recaptcha-v2"
+
+const { handleGetResponse } = useRecaptcha()
+const { handleReset } = useRecaptcha()
+const captchaId= ref(null)
 
 const allowedTags = ['a', 'code', 'i', 'strong']
+
+const handleWidgetId = (widgetId) => {
+  captchaId.value = widgetId
+};
 
 onMounted(async () => {
   try {
@@ -218,29 +232,36 @@ function getCSRFToken() {
 async function submitForm() {
   v$.value.$touch()
   if (!v$.value.$invalid && !fileError.value) {
-    try {
-      const formData = new FormData()
+    let recaptchaData = handleGetResponse(captchaId.value)
+    if (!recaptchaData) {
+      alert('Please complete the captcha.')
+    } else {
+        try {
+          const formData = new FormData()
 
-      commentData(formData)
+          formData.append('recaptcha', recaptchaData)
 
-      if (form.value.file) {
-        mediaData(formData)
+          commentData(formData)
+
+          if (form.value.file) {
+            mediaData(formData)
+          }
+
+          handleReset(captchaId.value)
+          console.log(formData)
+
+          const response = await axios.post('http://localhost:8000/api/comments/', formData, {
+            headers: {
+              'Content-Type': 'multipart/form-data',
+              'X-CSRFToken': getCSRFToken(),
+            }
+          })
+          console.log('Form submitted successfully:', response.data)
+          alert('Form submitted successfully!')
+      } catch (error) {
+          console.error('Error submitting form:', error)
+          alert('There was an error submitting the form.')
       }
-
-      console.log(formData)
-
-      const response = await axios.post('http://localhost:8000/api/comments/', formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-          'X-CSRFToken': getCSRFToken(),
-        }
-      })
-
-      console.log('Form submitted successfully:', response.data)
-      alert('Form submitted successfully!')
-    } catch (error) {
-      console.error('Error submitting form:', error)
-      alert('There was an error submitting the form.')
     }
   } else {
     alert('Please fix the errors.')

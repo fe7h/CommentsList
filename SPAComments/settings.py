@@ -48,6 +48,7 @@ INSTALLED_APPS = [
     'polymorphic',
     'imagekit',
     'corsheaders',
+    'drf_recaptcha',
 
     'comments',
 ]
@@ -137,3 +138,5 @@ MEDIA_ROOT = BASE_DIR / 'media'
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+DRF_RECAPTCHA_SECRET_KEY = '6LeHL1krAAAAAEFoGMrpdmBsLXZ9enrb5Oe8KwRt'
