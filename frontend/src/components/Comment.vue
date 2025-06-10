@@ -3,7 +3,12 @@
           <div class="mb-1">
             <strong>{{ comment.user_name }}</strong>
             <span class="text-muted small">• {{ formatDate(comment.time_create) }}</span>
-            <button class="btn btn-link btn-sm p-0 mb-1">Ответить</button>
+            <button
+                class="btn btn-link btn-sm p-0 mb-1"
+                @click="store.commit('SET_REPLY', {comment})"
+            >
+              Ответить
+            </button>
           </div>
           <p v-html="sanitizedText"></p>
 
