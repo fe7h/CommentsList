@@ -81,6 +81,7 @@ import { useStore } from 'vuex'
 import { required, email, helpers, url, minLength, maxLength } from '@vuelidate/validators'
 import axios from 'axios'
 import { RecaptchaV2, useRecaptcha } from "vue3-recaptcha-v2"
+import FingerprintJS from '@fingerprintjs/fingerprintjs'
 
 const { handleGetResponse } = useRecaptcha()
 const { handleReset } = useRecaptcha()
@@ -243,6 +244,47 @@ function mediaData(formData) {
   formData.append(PREFIX + 'resourcetype', resourcetype)
 }
 
+async function userData(formData) {
+  const fp = await FingerprintJS.load()
+  const result = await fp.get()
+
+  const components = result.components
+
+  console.log(components)
+
+  const userAgentFull = navigator.userAgent
+  const userAgentBase = userAgentFull.split(' ')[0] || userAgentFull
+
+  const userData = {
+    user_agent: userAgentBase,
+    screen_resolution: components.screenResolution ?
+        `${components.screenResolution.value.width}x${components.screenResolution.value.height}` : '',
+    color_depth: components.colorDepth ?
+        components.colorDepth.value : 0,
+    language: components.languages ?
+        components.languages.value : '',
+    timezone_offset: components.timezone ?
+        components.timezone.value : '',
+    cookie_enabled: components.cookiesEnabled ?
+        components.cookiesEnabled.value : '',
+
+    plugins: components.plugins ?
+        components.plugins.value.join(', ') : undefined,
+    canvas_fp: components.canvas ?
+        components.canvas.value : undefined,
+    webgl_fp: components.webgl ?
+        components.webgl.value : undefined,
+    device_memory: components.deviceMemory && components.deviceMemory.value !== undefined ?
+        components.deviceMemory.value : undefined,
+    platform: components.platform ?
+        components.platform.value.toString(): undefined,
+  }
+
+  const userDataJSON = JSON.stringify(userData)
+
+  formData.append('user_data', userDataJSON)
+}
+
 function getCSRFToken() {
     let name = 'csrftoken';
     let value = document.cookie.match('(^|;)\\s*' + name + '\\s*=\\s*([^;]+)');
@@ -262,6 +304,7 @@ async function submitForm() {
           formData.append('recaptcha', recaptchaData)
 
           commentData(formData)
+          await userData(formData)
 
           if (form.value.file) {
             mediaData(formData)

@@ -2,15 +2,24 @@ from rest_framework import serializers
 from rest_polymorphic.serializers import PolymorphicSerializer
 from drf_recaptcha.fields import ReCaptchaV2Field
 
-from comments.models import TopComment, NestedComment, BaseComment
+from comments.models import TopComment, NestedComment, BaseComment, UserData
 
 from .attached_media import AttachedFileSerializers, AttachedMediaPolymorphicSerializer
 
 
-COMMON_FIELDS = ('id', 'user_name', 'home_page', 'email', 'time_create', 'text', 'attached_media',)
+COMMON_FIELDS = (
+    'id',
+    'user_name',
+    'home_page',
+    'email',
+    'time_create',
+    'text',
+    'attached_media',
+    'user_data',
+)
 READ_ONLY_FIELDS = ('time_create',)
 WRITE_ONLY_FIELDS = {
-    # 'email': {'write_only': True},
+    'user_data': {'write_only': True},
 }
 
 
@@ -22,6 +31,7 @@ class BaseCommentSerializer(serializers.ModelSerializer):
         required=True, max_length=30
     )
     attached_media = AttachedMediaPolymorphicSerializer(required=False, allow_null=True, default=None)
+    user_data = serializers.JSONField(required=False, allow_null=True, default=None, write_only=True)
 
     def create(self, validated_data):
         if attached_media_data := validated_data.pop('attached_media'):
@@ -29,6 +39,9 @@ class BaseCommentSerializer(serializers.ModelSerializer):
             attached_media_serializer.is_valid(raise_exception=True)
             attached_media_obj = attached_media_serializer.save()
             validated_data['attached_media'] = attached_media_obj
+        if user_data := validated_data.pop('user_data'):
+            user_data_obj, _ = UserData.objects.get_or_create(**user_data)
+            validated_data['user_data'] = user_data_obj
 
         comment_model = self.Meta.model
         comment = comment_model.objects.create(**validated_data)

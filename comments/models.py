@@ -1,3 +1,5 @@
+import hashlib
+
 from django.db import models
 from django.core.validators import FileExtensionValidator
 
@@ -10,9 +12,44 @@ from .managers import CommentManagersMixin
 from .validators import validate_file_size
 
 
-# class UserData(models.Model):
-#     pass
-# модель с наборм данных с запроса пользователя(юзерагент апи и тд) и уникальным хешем на их основе
+class UserData(models.Model):
+    user_hash = models.CharField(
+        max_length=255,
+        unique=True,
+        db_index=True,
+        primary_key=True
+    )
+
+    user_agent = models.TextField()
+    screen_resolution = models.CharField(max_length=20)
+    color_depth = models.PositiveSmallIntegerField()
+    language = models.CharField(max_length=20)
+    timezone_offset = models.CharField(max_length=255)
+    cookie_enabled = models.BooleanField()
+
+    plugins = models.TextField(blank=True)
+
+    canvas_fp = models.TextField(blank=True)
+    webgl_fp = models.TextField(blank=True)
+
+    device_memory = models.FloatField(null=True, blank=True)
+    platform = models.CharField(max_length=255, blank=True, null=True)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def save(self, *args, **kwargs):
+        h = hashlib.sha256()
+
+        fields = self._meta.get_fields()
+        for field in fields:
+            if field.name != 'comments':
+                val = str(getattr(self, field.name, None))
+                h.update(val.encode('utf-8'))
+
+        self.user_hash = h.hexdigest()
+
+        super().save(*args, **kwargs)
+
 
 class AttachedMedia(PolymorphicModel):
     pass
@@ -40,11 +77,13 @@ class AttachedImage(AttachedMedia):
 
 class BaseComment(CommentManagersMixin, PolymorphicModel):
     time_create = models.DateTimeField(auto_now_add=True)
-    # user_data = models.ForeignKey(
-    #         UserData,
-    #         on_delete=models.PROTECT,
-    #         related_name='comments',
-    #     )
+    user_data = models.ForeignKey(
+            UserData,
+            on_delete=models.PROTECT,
+            related_name='comments',
+            blank=True,
+            null=True,
+        )
     user_name = models.CharField(max_length=30)
     email = models.EmailField()
     home_page = models.URLField(blank=True, null=True)
