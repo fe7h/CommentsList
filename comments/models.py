@@ -40,15 +40,17 @@ class UserData(models.Model):
     def save(self, *args, **kwargs):
         h = hashlib.sha256()
 
-        fields = self._meta.get_fields()
+        fields = self._meta.fields
         for field in fields:
-            if field.name != 'comments':
-                val = str(getattr(self, field.name, None))
-                h.update(val.encode('utf-8'))
+            val = str(getattr(self, field.name, None))
+            h.update(val.encode('utf-8'))
 
         self.user_hash = h.hexdigest()
 
         super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f'{self.user_hash[:4]}...{self.user_hash[-4:]}'
 
 
 class AttachedMedia(PolymorphicModel):
