@@ -2,7 +2,7 @@ from ._common import *
 
 COMMON_FIELDS += ('nested_comments', )
 
-
+# возращает все связаные обекты одним запросом к бд
 class _FullNestetSerializer(BaseCommentSerializer):
 
     nested_comments = serializers.SerializerMethodField()
