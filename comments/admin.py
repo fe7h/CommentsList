@@ -1,5 +1,6 @@
 from django.contrib import admin
 from django.utils.safestring import mark_safe
+from django.utils.html import format_html
 from django.db.models import Q
 
 from polymorphic.admin import PolymorphicParentModelAdmin, PolymorphicChildModelAdmin
@@ -22,14 +23,12 @@ class NestedCommentsFilter(InputFilter):
         return None
 
 
-COMMON_READONLY_FIELDS = (
-    'user_data',
-    'nested_comments',
-)
-
-
 class BaseCommentChildAdmin(PolymorphicChildModelAdmin):
-    readonly_fields = COMMON_READONLY_FIELDS
+    readonly_fields = (
+        'media_data',
+        'user_data',
+        'nested_comments',
+    )
 
     def nested_comments(self, obj):
         queryset = (BaseComment.objects.
@@ -44,6 +43,13 @@ class BaseCommentChildAdmin(PolymorphicChildModelAdmin):
 
     nested_comments.short_description = mark_safe('First level<br>nested comments')
 
+    def media_data(self, obj):
+        attached_media = obj.attached_media
+        field = link_to_obj(attached_media)
+        if isinstance(attached_media, AttachedImage):
+            field += '<br>' + AttachedImageAdmin.img(self, attached_media)
+        return format_html(field)
+
     def has_module_permission(self, request):
         return False
 
@@ -54,12 +60,12 @@ class TopCommentAdmin(BaseCommentChildAdmin):
 
 
 @admin.register(NestedComment)
-class ModelCAdmin(BaseCommentChildAdmin):
+class NestedCommentAdmin(BaseCommentChildAdmin):
     base_model = NestedComment
 
     readonly_fields = (
         'parent_comment',
-        *COMMON_READONLY_FIELDS,
+        *BaseCommentChildAdmin.readonly_fields,
     )
 
 
@@ -136,3 +142,37 @@ class UserDataAdmin(admin.ModelAdmin):
                 obj.comments.all()
             )
         ))
+
+
+class AttachedMediaChildAdmin(PolymorphicChildModelAdmin):
+    list_display = (
+        'id',
+        'data',
+    )
+    readonly_fields = (
+        'data',
+        'comment',
+    )
+
+
+@admin.register(AttachedFile)
+class AttachedFileAdmin(AttachedMediaChildAdmin):
+    base_model = AttachedFile
+
+
+@admin.register(AttachedImage)
+class AttachedImageAdmin(AttachedMediaChildAdmin):
+    base_model = AttachedImage
+
+    list_display = (
+        'id',
+        'img',
+    )
+
+    readonly_fields = (
+        *AttachedMediaChildAdmin.readonly_fields,
+        'img',
+    )
+
+    def img(self, obj):
+        return format_html('<img src="{}"/>', obj.data.url)
