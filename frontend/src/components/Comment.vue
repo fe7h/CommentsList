@@ -137,7 +137,7 @@ const fetchData = async () => {
     if (nextPageUrl) {
       response = await fetch(nextPageUrl)
     } else {
-      response = await fetch(`http://localhost:8000/api/comments/${props.comment.id}/nested/`)
+      response = await fetch(store.getters['API_URL'] + `comments/${props.comment.id}/nested/`)
     }
 
     if (!response.ok) {

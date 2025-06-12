@@ -61,7 +61,7 @@ import { useStore } from 'vuex'
 const store = useStore()
 
 const topComments = ref([])
-let nextPageUrl = 'http://localhost:8000/api/comments/top/'
+let nextPageUrl = store.getters['API_URL'] + 'comments/top/'
 const currentOrdering = ref({ field: 'time_create', desc: true })
 const orderingFields = ['user_name', 'email', 'time_create']
 const fieldLabels = {
@@ -74,7 +74,7 @@ const buildUrl = () => {
   const orderParam = currentOrdering.value.desc
     ? `-${currentOrdering.value.field}`
     : currentOrdering.value.field
-  return `http://localhost:8000/api/comments/top/?ordering=${orderParam}`
+  return store.getters['API_URL'] + `comments/top/?ordering=${orderParam}`
 }
 
 const fetchTopData = async () => {

@@ -3,11 +3,16 @@ import {createStore} from "vuex";
 
 export default createStore({
     state: {
+      apiBaseUrl: 'http://localhost:8000/api/',
       nestedCommentsById: {}, // { [commentId]: [nestedCommentsArray] }
       replyToComment: null,
       isFormVisible: false,
   },
   getters: {
+    API_URL: state => {
+      return state.apiBaseUrl
+    },
+
     TRACKED_BRANCHES: state => {
       return state.nestedCommentsById
     },
