@@ -59,7 +59,7 @@
     <!-- File input -->
     <div class="mb-3">
       <label class="form-label">Attach Media (Image or TXT)</label>
-      <input type="file" class="form-control" @change="handleFileUpload" />
+      <input type="file" class="form-control" @change="handleFileUpload" ref="fileInput"/>
       <div v-if="fileError" class="alert alert-danger mt-2 p-2">{{ fileError }}</div>
       <img v-if="previewImage" :src="previewImage" class="img-fluid mt-2 rounded border" style="max-width: 320px; max-height: 240px;" />
     </div>
@@ -88,30 +88,6 @@ const { handleReset } = useRecaptcha()
 const captchaId= ref(null)
 
 const store = useStore()
-const allowedTags = ['a', 'code', 'i', 'strong']
-
-// function isValidXHTML(value) {
-//   const parser = new DOMParser()
-//   const wrapped = `<body>${value}</body>`
-//   const doc = parser.parseFromString(wrapped, 'application/xhtml+xml')
-//   const parserError = doc.querySelector('parsererror')
-//   if (parserError) return false
-//
-//   const nodes = doc.body.querySelectorAll('*')
-//   for (const node of nodes) {
-//     const tag = node.tagName.toLowerCase()
-//     if (!allowedTags.includes(tag)) return false
-//     if (tag === 'a' && (!node.hasAttribute('href') || !node.hasAttribute('title'))) {
-//       return false
-//     }
-//   }
-//   return true
-// }
-//
-// const htmlValidation = helpers.withMessage(
-//   'Text must be valid XHTML and use only allowed tags',
-//   value => isValidXHTML(value)
-// )
 
 const form = ref({
   username: '',
@@ -137,6 +113,7 @@ const v$ = useVuelidate(rules, { form })
 const fileError = ref('')
 const previewImage = ref(null)
 const textarea = ref(null)
+const fileInput = ref(null)
 
 const handleWidgetId = (widgetId) => {
   captchaId.value = widgetId
@@ -322,6 +299,16 @@ async function submitForm() {
           console.log('Form submitted successfully:', response.data)
           alert('Form submitted successfully!')
           store.commit('DEL_REPLY')
+          form.value.text = ''
+          form.value.file = null
+          fileError.value = false
+          previewImage.value = null
+
+          if (fileInput.value) {
+            fileInput.value.value = null
+          }
+
+          v$.value.$reset()
       } catch (error) {
           console.error('Error submitting form:', error)
           alert('There was an error submitting the form.')
