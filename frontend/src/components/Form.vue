@@ -246,7 +246,7 @@ async function userData(formData) {
         components.cookiesEnabled.value : '',
 
     plugins: components.plugins ?
-        components.plugins.value.join(', ') : undefined,
+      components.plugins.value.map(p => p.name || JSON.stringify(p)).join(', ') : undefined,
     canvas_fp: components.canvas ?
         components.canvas.value : undefined,
     webgl_fp: components.webgl ?
