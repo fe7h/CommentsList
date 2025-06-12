@@ -1,40 +1,87 @@
 <template>
-        <div class="comment mb-2 p-3 bg-light rounded">
-          <div class="mb-1">
-            <strong>{{ comment.user_name }}</strong>
-            <span class="text-muted small">• {{ formatDate(comment.time_create) }}</span>
-            <button
-                class="btn btn-link btn-sm p-0 mb-1"
-                @click="store.commit('SET_REPLY', {comment})"
-            >
-              Ответить
-            </button>
-          </div>
-          <p v-html="sanitizedText"></p>
+  <div class="comment mb-2 p-3 bg-light rounded">
 
-          <button
-              class="btn btn-sm btn-outline-primary mt-2 toggle-replies-btn"
-              type="button"
-              @click="handleShowReplies"
-              :disabled="isLoading"
+  <div class="comment mb-3">
+    <div class="d-flex align-items-center mb-1">
+      <div class="d-flex align-items-center gap-3 flex-grow-1">
+        <template v-if="comment.home_page">
+          <a :href="comment.home_page" target="_blank" rel="noopener" class="fw-semibold fs-6 text-decoration-none">
+            {{ comment.user_name }}
+          </a>
+        </template>
+        <template v-else>
+          <strong class="fs-6">{{ comment.user_name }}</strong>
+        </template>
+        •
+        <span class="text-muted small">
+          {{ formatDate(comment.time_create) }}
+        </span>
+      </div>
+
+      <button
+        class="btn btn-link btn-sm p-0"
+        @click="store.commit('SET_REPLY', { comment })"
+        style="white-space: nowrap;"
+      >
+        Reply
+      </button>
+    </div>
+
+    <div class="text-muted small d-flex align-items-center gap-2 mb-2">
+      <i class="bi bi-envelope-fill"></i>
+      <a :href="`mailto:${comment.email}`" class="text-muted text-decoration-none">
+        {{ comment.email }}
+      </a>
+    </div>
+
+    <div class="bg-secondary bg-opacity-10 rounded p-3">
+      <p v-html="sanitizedText" class="mb-3"></p>
+
+      <div v-if="comment.attached_media && comment.attached_media.data" class="mt-2">
+        <template v-if="isImage(comment.attached_media.data)">
+          <img
+            :src="comment.attached_media.data"
+            alt="Attached image"
+            class="img-fluid rounded border"
+            style="max-height: 250px; object-fit: contain;"
+          />
+        </template>
+        <template v-else-if="isTextFile(comment.attached_media.data)">
+          <a
+            :href="comment.attached_media.data"
+            target="_blank"
+            rel="noopener"
+            class="btn btn-outline-secondary btn-sm d-inline-flex align-items-center gap-1"
           >
-            Показать ответы
-          </button>
+            <i class="bi bi-file-earmark-text"></i> 📄 Download attachment txt
+          </a>
+        </template>
+      </div>
+    </div>
+  </div>
 
-          <!-- Ответы -->
-          <div class="comment-reply mt-3">
+    <button
+    class="btn btn-sm btn-outline-primary mt-2 toggle-replies-btn"
+    type="button"
+    @click="handleShowReplies"
+    :disabled="isLoading"
+    >
+      Показать ответы
+    </button>
 
-            <Comment v-for="obj in nestedComments" :key="obj.id" :comment="obj"/>
+    <!-- Ответы -->
+    <div class="comment-reply mt-3">
 
-            <button v-if="nextPageUrl" @click="fetchData">More</button>
+      <Comment v-for="obj in nestedComments" :key="obj.id" :comment="obj"/>
 
-            <div v-if="showReplys && nestedComments.length === 0">
-              <!-- Скрытая часть -->
-              <div class="no-replies-text text-muted fst-italic">Нет ответов</div>
-            </div>
+      <button v-if="nextPageUrl" @click="fetchData">More</button>
 
-          </div>
-        </div>
+      <div v-if="showReplys && nestedComments.length === 0">
+        <!-- Скрытая часть -->
+        <div class="no-replies-text text-muted fst-italic">Нет ответов</div>
+      </div>
+    </div>
+  </div>
 </template>
 
 <script setup>
@@ -73,6 +120,15 @@ const formatDate = (isoStr) => {
     timeStyle: 'short'
   })
 }
+
+const isImage = (url) => {
+  return /\.(jpe?g|png|gif|webp|bmp)$/i.test(url);
+}
+
+const isTextFile = (url) => {
+  return /\.txt$/i.test(url);
+}
+
 
 const fetchData = async () => {
   try {
