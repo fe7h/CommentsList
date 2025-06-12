@@ -66,7 +66,7 @@
     @click="handleShowReplies"
     :disabled="isLoading"
     >
-      Показать ответы
+      Show replies
     </button>
 
     <!-- Ответы -->
@@ -78,7 +78,7 @@
 
       <div v-if="showReplys && nestedComments.length === 0">
         <!-- Скрытая часть -->
-        <div class="no-replies-text text-muted fst-italic">Нет ответов</div>
+        <div class="no-replies-text text-muted fst-italic">No replies</div>
       </div>
     </div>
   </div>

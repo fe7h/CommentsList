@@ -1,41 +1,55 @@
 <template>
-  <div>
-    <h1 class="mb-4">Comments</h1>
-    <div class="d-flex gap-2 mb-3">
-      <button
-        v-for="field in orderingFields"
-        :key="field"
-        type="button"
-        class="btn"
-        :class="currentOrdering.field === field ? 'btn-primary' : 'btn-outline-primary'"
-        @click="toggleOrdering(field)"
-      >
-        {{ fieldLabels[field] }}
-        <span v-if="currentOrdering.field === field">
-          {{ currentOrdering.desc ? '↓' : '↑' }}
-        </span>
-      </button>
-    </div>
+  <div class="comments-container">
+    <div class="comments-wrapper">
+      <div>
+        <h1 class="mb-4">Comments</h1>
+        <div class="d-flex gap-2 mb-3">
+          <button
+            v-for="field in orderingFields"
+            :key="field"
+            type="button"
+            class="btn"
+            :class="currentOrdering.field === field ? 'btn-primary' : 'btn-outline-primary'"
+            @click="toggleOrdering(field)"
+          >
+            {{ fieldLabels[field] }}
+            <span v-if="currentOrdering.field === field">
+              {{ currentOrdering.desc ? '↓' : '↑' }}
+            </span>
+          </button>
+        </div>
 
-    <div class="container my-5">
-      <Comment v-for="obj in topComments" :key="obj.id" :comment="obj"/>
-      <button v-if="nextPageUrl" @click="fetchTopData">More</button>
-      <p v-show="!nextPageUrl">END</p>
-    </div>
+        <div class="container my-5">
+          <Comment v-for="obj in topComments" :key="obj.id" :comment="obj"/>
+          <button
+            v-if="nextPageUrl"
+            @click="fetchTopData"
+            type="button"
+            class="btn btn-primary"
+          >
+            Load more
+          </button>
 
-    <div v-if="store.getters['GET_FORM_STATE']" class="floating-form">
-      <Form />
-    </div>
+          <p v-show="!nextPageUrl" class="text-center text-muted fst-italic mt-3">
+            That's all!
+          </p>
+        </div>
 
-    <button class="floating-btn" @click="store.commit('FORM_VISIBLE')">
-      <transition name="fade" mode="out-in">
-        <span :key="store.getters['GET_FORM_STATE']">
-         {{ store.getters['GET_FORM_STATE'] ? '–' : '+' }}
-        </span>
-      </transition>
-    </button>
+        <div v-if="store.getters['GET_FORM_STATE']" class="floating-form">
+          <Form />
+        </div>
 
+        <button class="floating-btn" @click="store.commit('FORM_VISIBLE')">
+          <transition name="fade" mode="out-in">
+            <span :key="store.getters['GET_FORM_STATE']">
+             {{ store.getters['GET_FORM_STATE'] ? '–' : '+' }}
+            </span>
+          </transition>
+        </button>
+
+      </div>
     </div>
+  </div>
 </template>
 
 <script setup>
@@ -156,5 +170,27 @@ onMounted(() => {
     transform: translateY(0);
     opacity: 1;
   }
+}
+
+.comments-container {
+  display: flex;
+  justify-content: left;
+  align-items: center;
+  height: 100vh;       /* 100% высоты окна браузера */
+  width: 100vw;        /* 100% ширины окна браузера */
+  overflow: visible;   /* чтобы не было прокруток внутри */
+  box-sizing: border-box;
+  padding: 20px;       /* отступы чтобы не прилегало к краям */
+}
+
+.comments-wrapper {
+  width: 850px;        /* фиксированная ширина */
+  height: 700px;       /* фиксированная высота */
+  overflow: visible;   /* без прокрутки */
+ /* для видимости блока */
+  border-radius: 8px;
+  padding: 1rem;
+
+  box-sizing: border-box;
 }
 </style>
