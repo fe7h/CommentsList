@@ -8,8 +8,12 @@ from comments.urls import urlpatterns as csrf_urls
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('api/', include(comment_urls)),
-    path('api/', include(csrf_urls)),
+    path('api/', include([
+        path('', include(comment_urls)),
+        path('', include(csrf_urls)),
+        ])
+    ),
 ]
 
-urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
