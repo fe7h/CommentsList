@@ -19,6 +19,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # Application definition
 
 INSTALLED_APPS = [
+    'daphne',
+
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -32,6 +34,7 @@ INSTALLED_APPS = [
     'imagekit',
     'corsheaders',
     'drf_recaptcha',
+    'channels',
 
     'comments',
 ]
@@ -65,6 +68,13 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'SPAComments.wsgi.application'
+ASGI_APPLICATION = 'SPAComments.asgi.application'
+
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels.layers.InMemoryChannelLayer",
+    },
+}
 
 
 # Password validation
