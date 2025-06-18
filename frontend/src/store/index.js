@@ -1,12 +1,12 @@
 import {createStore} from "vuex";
 
-
 export default createStore({
     state: {
       apiBaseUrl: 'http://localhost:8000/api/',
-      nestedCommentsById: {}, // { [commentId]: [nestedCommentsArray] }
+      trackedCommentsById: {}, // { [commentId (or 'top')]: [commentsArray] }
       replyToComment: null,
       isFormVisible: false,
+      socket: null,
   },
   getters: {
     API_URL: state => {
@@ -14,7 +14,8 @@ export default createStore({
     },
 
     TRACKED_BRANCHES: state => {
-      return state.nestedCommentsById
+      console.log(state.trackedCommentsById)
+      return state.trackedCommentsById
     },
 
     GET_REPLY_ID: state => {
@@ -29,8 +30,14 @@ export default createStore({
     },
   },
   mutations: {
-    ADD_BRANCHES: (state, { id, nestedComments }) => {
-      state.nestedCommentsById[id] = nestedComments
+    ADD_BRANCHES: (state, { id, commentsBranch }) => {
+      state.trackedCommentsById[id] = commentsBranch
+
+      state.socket.send(
+          JSON.stringify({
+            tracked_branches: Object.keys(state.trackedCommentsById)
+          })
+      )
     },
 
     SET_REPLY: (state, {comment}) => {
@@ -40,12 +47,38 @@ export default createStore({
     },
     DEL_REPLY: state => {
       state.replyToComment = null
-      console.log(state.replyToComment)
     },
 
     FORM_VISIBLE: state => {
       state.isFormVisible = !state.isFormVisible
     },
+
+    SET_SOCKET(state, socket) {
+      state.socket = socket
+    },
   },
-  actions: {},
+  actions: {
+    createWebSocket({ commit, getters }, url) {
+      const socket = new WebSocket(url)
+
+      socket.onmessage = function(event) {
+        const data = JSON.parse(event.data)
+        const comment = data.comment
+
+        const branches = getters.TRACKED_BRANCHES
+        if (comment.parent_comment_id) {
+          branches[comment.parent_comment_id].push(comment)
+        } else {
+          branches["top"].unshift(comment)
+        }
+      }
+
+      socket.onerror = function(error) {
+        console.log(`[error]`, error);
+      }
+
+      commit('SET_SOCKET', socket)
+      return socket
+    }
+  },
 })

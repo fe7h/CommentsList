@@ -27,7 +27,7 @@ class CommentsConsumer(JsonWebsocketConsumer):
         comment = event['comment']
         response = {}
 
-        if not hasattr(comment, 'parent_comment_id') or comment.parent_comment_id in self.tracked_branches:
+        if not hasattr(comment, 'parent_comment_id') or str(comment.parent_comment_id) in self.tracked_branches:
             response['comment'] = CommentPolymorphicSerializer(comment).data
 
             self.send_json({

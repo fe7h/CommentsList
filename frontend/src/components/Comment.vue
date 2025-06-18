@@ -40,7 +40,7 @@
       <div v-if="comment.attached_media && comment.attached_media.data" class="mt-2">
         <template v-if="isImage(comment.attached_media.data)">
           <img
-            :src="comment.attached_media.data"
+            :src="getFullUrl(comment.attached_media.data)"
             alt="Attached image"
             class="img-fluid rounded border"
             style="max-height: 250px; object-fit: contain;"
@@ -48,7 +48,7 @@
         </template>
         <template v-else-if="isTextFile(comment.attached_media.data)">
           <a
-            :href="comment.attached_media.data"
+            :href="getFullUrl(comment.attached_media.data)"
             target="_blank"
             rel="noopener"
             class="btn btn-outline-secondary btn-sm d-inline-flex align-items-center gap-1"
@@ -129,6 +129,17 @@ const isTextFile = (url) => {
   return /\.txt$/i.test(url);
 }
 
+function getFullUrl(path) {
+  if (!path) return ''
+  if (path.startsWith('http')) {
+    return path
+  } else {
+    let base = store.getters['API_URL'];
+    base = base.replace(/\/?api\/?$/, '');
+    path = path.replace(/^\/+/, '');
+    return `${base}/${path}`;
+  }
+}
 
 const fetchData = async () => {
   try {
@@ -149,7 +160,7 @@ const fetchData = async () => {
     nextPageUrl = data.next
 
     if (nextPageUrl === null) {
-        store.commit('ADD_BRANCHES', {id: props.comment.id, nestedComments })
+        store.commit('ADD_BRANCHES', {id: props.comment.id, commentsBranch: nestedComments })
     }
 
   } catch (error) {

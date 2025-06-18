@@ -86,6 +86,7 @@ const fetchTopData = async () => {
 
     const data = await response.json()
     topComments.value.push(...data.results)
+    store.commit('ADD_BRANCHES', {id: 'top', commentsBranch: topComments })
     nextPageUrl = data.next
   } catch (error) {
     console.error('Ошибка при загрузке данных:', error)
@@ -106,6 +107,7 @@ const toggleOrdering = (field) => {
 }
 
 onMounted(() => {
+  store.dispatch('createWebSocket', 'ws://localhost:8000/ws/connect/')
   fetchTopData()
 })
 </script>
