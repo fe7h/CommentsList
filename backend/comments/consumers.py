@@ -1,9 +1,11 @@
 from asgiref.sync import async_to_sync
 from channels.generic.websocket import JsonWebsocketConsumer
 
+from comments.api.serializers import CommentPolymorphicSerializer
+
 
 class CommentsConsumer(JsonWebsocketConsumer):
-    tracked_branches = None
+    tracked_branches = []
 
     def connect(self):
         async_to_sync(self.channel_layer.group_add)(
@@ -20,19 +22,14 @@ class CommentsConsumer(JsonWebsocketConsumer):
 
     def receive_json(self, content, **kwargs):
         self.tracked_branches = content.get('tracked_branches')
-        print(self.tracked_branches, type(self.tracked_branches))
-
-        # async_to_sync(self.channel_layer.group_send)(
-        #     'connect',
-        #     {
-        #         'type': 'new_comment',
-        #         'comment': comment,
-        #     }
-        # )
 
     def new_comment(self, event):
         comment = event['comment']
+        response = {}
 
-        self.send_json({
-            "comment": comment
-        })
+        if not hasattr(comment, 'parent_comment_id') or comment.parent_comment_id in self.tracked_branches:
+            response['comment'] = CommentPolymorphicSerializer(comment).data
+
+            self.send_json({
+                **response
+            })
