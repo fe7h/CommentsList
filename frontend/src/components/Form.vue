@@ -297,7 +297,7 @@ async function submitForm() {
             }
           })
           console.log('Form submitted successfully:', response.data)
-          alert('Form submitted successfully!')
+          // alert('Form submitted successfully!')
           store.commit('DEL_REPLY')
           form.value.text = ''
           form.value.file = null
