@@ -6,7 +6,7 @@ from django.core.validators import FileExtensionValidator
 from polymorphic.models import PolymorphicModel
 
 from imagekit.models import ProcessedImageField
-from imagekit.processors import ResizeToFill
+from imagekit.processors import ResizeToFit
 
 from .managers import CommentManagersMixin
 from .validators import validate_file_size
@@ -70,7 +70,7 @@ class AttachedFile(AttachedMedia):
 class AttachedImage(AttachedMedia):
     data = ProcessedImageField(
         upload_to='comments/images/',
-        processors=[ResizeToFill(320, 240)],
+        processors=[ResizeToFit(320, 240, upscale=False)],
         validators=[
             FileExtensionValidator(allowed_extensions=['jpg', 'jpeg', 'gif', 'png'])
         ],

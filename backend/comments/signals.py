@@ -8,7 +8,6 @@ from .models import TopComment, NestedComment
 
 def comment_saved(sender, instance, created, **kwargs):
     if created:
-        print(instance)
         async_to_sync(get_channel_layer().group_send)(
             'connect',
             {
