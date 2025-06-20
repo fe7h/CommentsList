@@ -122,7 +122,7 @@ const handleWidgetId = (widgetId) => {
 onMounted(async () => {
   try {
     axios.defaults.withCredentials = true;
-    await axios.get(store.getters['API_URL'] + 'csrf/')
+    await axios.get(store.getters['BACKEND_URL'] + 'csrf/')
   } catch (error) {
     console.error('Ошибка при запросе CSRF токена:', error)
   }
@@ -290,7 +290,7 @@ async function submitForm() {
           handleReset(captchaId.value)
           console.log(formData)
 
-          const response = await axios.post(store.getters['API_URL'] + 'comments/', formData, {
+          const response = await axios.post(store.getters['BACKEND_URL'] + 'api/comments/', formData, {
             headers: {
               'Content-Type': 'multipart/form-data',
               'X-CSRFToken': getCSRFToken(),

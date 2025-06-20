@@ -134,9 +134,7 @@ function getFullUrl(path) {
   if (path.startsWith('http')) {
     return path
   } else {
-    let base = store.getters['API_URL'];
-    base = base.replace(/\/?api\/?$/, '');
-    path = path.replace(/^\/+/, '');
+    let base = store.getters['BACKEND_URL'];
     return `${base}/${path}`;
   }
 }
@@ -148,7 +146,7 @@ const fetchData = async () => {
     if (nextPageUrl) {
       response = await fetch(nextPageUrl)
     } else {
-      response = await fetch(store.getters['API_URL'] + `comments/${props.comment.id}/nested/`)
+      response = await fetch(store.getters['BACKEND_URL'] + `api/comments/${props.comment.id}/nested/`)
     }
 
     if (!response.ok) {

@@ -2,15 +2,15 @@ import {createStore} from "vuex";
 
 export default createStore({
     state: {
-      apiBaseUrl: 'http://localhost:8000/api/',
+      baseBackendUrl: import.meta.env.VITE_BASE_URL || 'http://localhost:8000/',
       trackedCommentsById: {}, // { [commentId (or 'top')]: [commentsArray] }
       replyToComment: null,
       isFormVisible: false,
       socket: null,
   },
   getters: {
-    API_URL: state => {
-      return state.apiBaseUrl
+    BACKEND_URL: state => {
+      return state.baseBackendUrl
     },
 
     TRACKED_BRANCHES: state => {

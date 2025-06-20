@@ -10,4 +10,4 @@ COPY . .
 
 RUN python3 manage.py collectstatic --noinput
 
-CMD ["daphne", "-b", "0.0.0.0", "-p", "8000", "SPAComments.asgi:application"]
+CMD python3 manage.py migrate && daphne -b 0.0.0.0 -p 8000 SPAComments.asgi:application

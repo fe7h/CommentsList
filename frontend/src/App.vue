@@ -61,7 +61,7 @@ import { useStore } from 'vuex'
 const store = useStore()
 
 const topComments = ref([])
-let nextPageUrl = store.getters['API_URL'] + 'comments/top/'
+let nextPageUrl = store.getters['BACKEND_URL'] + 'api/comments/top/'
 const currentOrdering = ref({ field: 'time_create', desc: true })
 const orderingFields = ['user_name', 'email', 'time_create']
 const fieldLabels = {
@@ -74,7 +74,7 @@ const buildUrl = () => {
   const orderParam = currentOrdering.value.desc
     ? `-${currentOrdering.value.field}`
     : currentOrdering.value.field
-  return store.getters['API_URL'] + `comments/top/?ordering=${orderParam}`
+  return store.getters['BACKEND_URL'] + `api/comments/top/?ordering=${orderParam}`
 }
 
 const fetchTopData = async () => {
@@ -107,7 +107,8 @@ const toggleOrdering = (field) => {
 }
 
 onMounted(() => {
-  store.dispatch('createWebSocket', 'ws://localhost:8000/ws/connect/')
+  const wsUrl = store.getters['BACKEND_URL'].replace(/^http/, 'ws') + 'ws/connect/';
+  store.dispatch('createWebSocket', wsUrl)
   fetchTopData()
 })
 </script>
