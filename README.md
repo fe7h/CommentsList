@@ -4,7 +4,7 @@
 
 [Линк на сам сайт](http://213.111.146.176/)
 
-Лента коментариев с бэкендом на DRF и фронтендом на Vue.js.  
+Динамическая лента коментариев с бэкендом на DRF и фронтендом на Vue.js.  
 Бэкенд предоставляет REST API, фронтенд работает через axios с этим API.
 
 ---
@@ -16,6 +16,7 @@
 - Django
 - Django REST Framework
 - PostgreSQL (или SQLite)
+- Channels
 
 ### Frontend
 - Vue 3
@@ -26,6 +27,8 @@
 ### Прочие
 - Google reCAPTCHA v2
 - FingerprintJS
+- Docker
+- Docker Compose
 
 ---
 
@@ -67,6 +70,28 @@ python3 backend/manage.py runserver
 npm run dev --prefix ./frontend
 ```
 
+### В продакшн 
+
+Клонируйте репозиторий:
+
+``` bash
+git clone https://github.com/fe7h/ComentsTestTask.git
+cd ComentsTestTask
+```
+Заполните необходимые поля в:
+
+- `.env`
+- `init.sql`
+- `frontend/src/store/index.js`
+
+[Установите](https://docs.docker.com/engine/install/ubuntu/) `docker` и `docker compose`.
+
+Соберите контейнеры:
+
+``` bash
+sudo docker compose up -d --build
+```
+
 ---
 
 ## Об проекте
@@ -99,6 +124,20 @@ npm run dev --prefix ./frontend
 Все `GET` запросы к базе данных через api **оптимизированы до O(1)** — независимо от глубины вложенности.
 
 Для возможности межсайтовых запросов используется `django-cors-headers`.
+
+
+### WebSocket
+
+Реализован с помощью `channels`, как сервер стоит `daphne`. 
+
+Фронтенд при входе на сайт устанавливает *WebSocket*-соединение, 
+по которому отправляет *id* всех веток комментариев, 
+которые отслеживает пользователь.
+
+На бэкенде подключение обрабатывается через `consumer`. 
+При создании нового комментария срабатывает сигнал. 
+Если новый комментарий относится к одной из отслеживаемых веток, 
+он отправляется пользователю через открытое *WebSocket*-соединение.
 
 ### Админка
 
