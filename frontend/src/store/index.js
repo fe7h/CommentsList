@@ -2,7 +2,7 @@ import {createStore} from "vuex";
 
 export default createStore({
     state: {
-      baseBackendUrl: import.meta.env.VITE_BASE_URL || 'http://localhost:8000/',
+      baseBackendUrl: 'http://localhost:8000/',
       trackedCommentsById: {}, // { [commentId (or 'top')]: [commentsArray] }
       replyToComment: null,
       isFormVisible: false,

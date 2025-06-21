@@ -1,5 +1,8 @@
 import os
+from dotenv import load_dotenv
 from pathlib import Path
+
+load_dotenv()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -114,7 +117,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 DRF_RECAPTCHA_SECRET_KEY = os.getenv('RECAPTCHA_SECRET_KEY')
 
 
-try:
-    from .local_settings import *
-except ImportError:
+if os.getenv('PRODUCTION', False):
     from .prod_settings import *
+else:
+    from .local_settings import *
