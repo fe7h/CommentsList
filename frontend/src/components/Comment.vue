@@ -35,7 +35,7 @@
     </div>
 
     <div class="bg-secondary bg-opacity-10 rounded p-3">
-      <p v-html="sanitizedText" class="mb-3"></p>
+      <p v-html="sanitizedText" class="mb-3" style="white-space: pre-wrap"></p>
 
       <div v-if="comment.attached_media && comment.attached_media.data" class="mt-2">
         <template v-if="isImage(comment.attached_media.data)">
@@ -44,8 +44,15 @@
             alt="Attached image"
             class="img-fluid rounded border"
             style="max-height: 250px; object-fit: contain;"
+            @click="showLightbox(getFullUrl(comment.attached_media.data))"
+          />
+          <VueEasyLightbox
+            :visible="visible"
+            :imgs="[currentImg]"
+            @hide="visible = false"
           />
         </template>
+
         <template v-else-if="isTextFile(comment.attached_media.data)">
           <a
             :href="getFullUrl(comment.attached_media.data)"
@@ -86,6 +93,7 @@
 
 <script setup>
 import {defineAsyncComponent, computed, ref} from 'vue'
+import VueEasyLightbox from 'vue-easy-lightbox'
 
 const props = defineProps({
   comment: Object
@@ -100,6 +108,14 @@ import xss from 'xss'
 
 let nextPageUrl = ''
 const store = useStore()
+
+const visible = ref(false)
+const currentImg = ref('')
+
+function showLightbox(url) {
+  currentImg.value = url
+  visible.value = true
+}
 
 const sanitizedText = computed(() => {
   const xssOptions = {
