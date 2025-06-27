@@ -8,7 +8,7 @@ from rest_framework.response import Response
 
 from comments.models import BaseComment, TopComment
 from .serializers import CommentPolymorphicSerializer, TopCommentSerializers
-from .pagination import DefaultCommentPagination, CommentCursorPagination
+from .pagination import DefaultCommentPagination, TopCommentPagination
 
 
 class TopCommentView(viewsets.GenericViewSet,
@@ -16,7 +16,7 @@ class TopCommentView(viewsets.GenericViewSet,
     queryset = TopComment.with_media.all()
     serializer_class = TopCommentSerializers
 
-    pagination_class = CommentCursorPagination
+    pagination_class = TopCommentPagination
 
     filter_backends = [filters.OrderingFilter]
     ordering_fields = ['user_name', 'email', 'time_create']
